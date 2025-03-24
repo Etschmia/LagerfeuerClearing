@@ -396,7 +396,8 @@ def main():
 
     # Start the GUI application
     root = tk.Tk()
-    app = ExpenseApp(root, manager)
+    # Create app instance but no need to store it since it modifies root directly
+    ExpenseApp(root, manager)  # App instance is bound to root
     root.mainloop()
 
 
