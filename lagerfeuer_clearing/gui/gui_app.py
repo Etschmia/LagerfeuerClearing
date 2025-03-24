@@ -1,80 +1,73 @@
+#!/usr/bin/env python3
+"""
+Graphical user interface for expense sharing calculations.
+"""
+import os
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
-from collections import defaultdict
-import json
-import os
 
-# Initiale Standard-Vorgabewerte (Fallback)
-default_persons = ["Tobias", "Teal", "Adrian", "Patrick", "Marius", "Micha", "Jan", "Marlon"]
-default_groups = {
-    "Alle": default_persons[:],
-    "Fahrgemeinschaft": ["Tobias", "Teal", "Adrian", "Patrick", "Marius"]
-}
-default_expenses = [
-    {"person": "Tobias", "amount": 1300, "group": "Alle", "subject": "Unterkunft"},
-    {"person": "Teal", "amount": 1000, "group": "Fahrgemeinschaft", "subject": "Mietwagen"},
-    {"person": "Marlon", "amount": 700, "group": "Alle", "subject": "Kaufland"},
-    {"person": "Patrick", "amount": 450, "group": "Alle", "subject": "Bierdronka"},
-    {"person": "Marius", "amount": 40, "group": "Alle", "subject": "Saunaholz"},
-]
-default_prepayments = [
-    {"person": "Adrian", "amount": 100, "recipient": "Tobias"},
-    {"person": "Patrick", "amount": 100, "recipient": "Tobias"},
-    {"person": "Marius", "amount": 100, "recipient": "Tobias"},
-    {"person": "Micha", "amount": 100, "recipient": "Tobias"},
-    {"person": "Jan", "amount": 100, "recipient": "Tobias"},
-]
+from lagerfeuer_clearing.core import ExpenseManager
 
+# Default save file location
 SAVE_FILE = "expense_data.json"
 
-if os.path.exists(SAVE_FILE):
-    with open(SAVE_FILE, "r", encoding="utf-8") as f:
-        saved_data = json.load(f)
-    persons = saved_data["persons"]
-    groups = {k: v for k, v in saved_data["groups"].items()}
-    expenses = saved_data["expenses"]
-    prepayments = saved_data["prepayments"]
-else:
-    persons = default_persons[:]
-    groups = {k: v[:] for k, v in default_groups.items()}
-    expenses = default_expenses[:]
-    prepayments = default_prepayments[:]
 
 class ExpenseApp:
-    def __init__(self, root):
+    """GUI application for expense sharing calculations."""
+    
+    def __init__(self, root, manager):
+        """Initialize the GUI application.
+        
+        Args:
+            root: The tkinter root widget
+            manager: An ExpenseManager instance
+        """
         self.root = root
         self.root.title("Reisekostenaufteilung")
+        self.manager = manager
         
+        # Create shortcuts to manager data
+        self.persons = manager.persons
+        self.groups = manager.groups
+        self.expenses = manager.expenses
+        self.prepayments = manager.prepayments
+        
+        # Create notebook for tabs
         self.notebook = ttk.Notebook(root)
         self.notebook.pack(pady=10, expand=True)
         
+        # Create tab frames
         self.group_frame = ttk.Frame(self.notebook)
         self.expense_frame = ttk.Frame(self.notebook)
         self.prepayment_frame = ttk.Frame(self.notebook)
         self.result_frame = ttk.Frame(self.notebook)
         
+        # Add tabs to notebook
         self.notebook.add(self.group_frame, text="Gruppen")
         self.notebook.add(self.expense_frame, text="Ausgaben")
         self.notebook.add(self.prepayment_frame, text="Anzahlungen")
         self.notebook.add(self.result_frame, text="Ergebnisse")
         
+        # Set up the tab content
         self.setup_group_tab()
         self.setup_expense_tab()
         self.setup_prepayment_tab()
         self.setup_result_tab()
 
     def update_all_comboboxes(self):
-        self.group_combo['values'] = list(groups.keys())
-        self.exp_person_combo['values'] = persons
-        self.exp_group_combo['values'] = list(groups.keys())
-        self.prepay_person_combo['values'] = persons
-        self.prepay_recipient_combo['values'] = persons
+        """Update all comboboxes with current data."""
+        self.group_combo['values'] = list(self.groups.keys())
+        self.exp_person_combo['values'] = self.persons
+        self.exp_group_combo['values'] = list(self.groups.keys())
+        self.prepay_person_combo['values'] = self.persons
+        self.prepay_recipient_combo['values'] = self.persons
 
     def setup_group_tab(self):
+        """Set up the groups management tab."""
         ttk.Label(self.group_frame, text="Gruppen verwalten").grid(row=0, column=0, columnspan=2, pady=5)
         
         self.group_var = tk.StringVar()
-        self.group_combo = ttk.Combobox(self.group_frame, textvariable=self.group_var, values=list(groups.keys()))
+        self.group_combo = ttk.Combobox(self.group_frame, textvariable=self.group_var, values=list(self.groups.keys()))
         self.group_combo.grid(row=1, column=0, padx=5)
         self.group_combo.bind("<<ComboboxSelected>>", self.update_group_list)
         
@@ -94,47 +87,44 @@ class ExpenseApp:
         ttk.Button(self.group_frame, text="Umbenennen", command=self.rename_group).grid(row=7, column=1)
 
     def update_group_list(self, event=None):
+        """Update the listbox with current group members."""
         self.group_listbox.delete(0, tk.END)
         selected_group = self.group_var.get()
-        if selected_group in groups:
-            for person in groups[selected_group]:
+        if selected_group in self.groups:
+            for person in self.groups[selected_group]:
                 self.group_listbox.insert(tk.END, person)
 
     def add_person(self):
+        """Add a person to a group."""
         person = self.person_var.get().strip()
         group = self.group_var.get()
-        if person and group in groups:
-            if person not in persons:
-                persons.append(person)
-            if person not in groups[group]:
-                groups[group].append(person)
+        if person and group in self.groups:
+            self.manager.add_person(person, group)
             self.update_group_list()
             self.update_all_comboboxes()
 
     def remove_person(self):
+        """Remove a person from a group."""
         group = self.group_var.get()
         selection = self.group_listbox.curselection()
-        if selection and group in groups:
+        if selection and group in self.groups:
             person = self.group_listbox.get(selection[0])
-            groups[group].remove(person)
-            if not any(person in members for members in groups.values()):
-                persons.remove(person)
+            self.manager.remove_person_from_group(person, group)
             self.update_group_list()
             self.update_all_comboboxes()
 
     def rename_group(self):
+        """Rename a group."""
         old_name = self.group_var.get()
         new_name = self.new_group_var.get().strip()
-        if old_name in groups and new_name and new_name not in groups:
-            groups[new_name] = groups.pop(old_name)
-            for expense in expenses:
-                if expense["group"] == old_name:
-                    expense["group"] = new_name
+        if old_name in self.groups and new_name and new_name not in self.groups:
+            self.manager.rename_group(old_name, new_name)
             self.group_var.set(new_name)
             self.update_group_list()
             self.update_all_comboboxes()
 
     def setup_expense_tab(self):
+        """Set up the expenses management tab."""
         ttk.Label(self.expense_frame, text="Ausgaben verwalten").grid(row=0, column=0, columnspan=2, pady=5)
         
         self.expense_listbox = tk.Listbox(self.expense_frame, height=10, width=50)
@@ -144,7 +134,7 @@ class ExpenseApp:
         
         ttk.Label(self.expense_frame, text="Person:").grid(row=1, column=1)
         self.exp_person_var = tk.StringVar()
-        self.exp_person_combo = ttk.Combobox(self.expense_frame, textvariable=self.exp_person_var, values=persons)
+        self.exp_person_combo = ttk.Combobox(self.expense_frame, textvariable=self.exp_person_var, values=self.persons)
         self.exp_person_combo.grid(row=2, column=1)
         
         ttk.Label(self.expense_frame, text="Betrag:").grid(row=3, column=1)
@@ -153,7 +143,7 @@ class ExpenseApp:
         
         ttk.Label(self.expense_frame, text="Gruppe:").grid(row=5, column=1)
         self.exp_group_var = tk.StringVar()
-        self.exp_group_combo = ttk.Combobox(self.expense_frame, textvariable=self.exp_group_var, values=list(groups.keys()))
+        self.exp_group_combo = ttk.Combobox(self.expense_frame, textvariable=self.exp_group_var, values=list(self.groups.keys()))
         self.exp_group_combo.grid(row=6, column=1)
         
         ttk.Label(self.expense_frame, text="Betreff:").grid(row=7, column=1)
@@ -165,21 +155,24 @@ class ExpenseApp:
         ttk.Button(self.expense_frame, text="Löschen", command=self.remove_expense).grid(row=11, column=1)
 
     def update_expense_list(self):
+        """Update the expense listbox with current expenses."""
         self.expense_listbox.delete(0, tk.END)
-        for exp in expenses:
+        for exp in self.expenses:
             self.expense_listbox.insert(tk.END, f"{exp['person']} - {exp['amount']} € - {exp['group']} - {exp['subject']}")
 
     def load_expense(self, event):
+        """Load an expense from the listbox into the input fields."""
         selection = self.expense_listbox.curselection()
         if selection:
             index = selection[0]
-            exp = expenses[index]
+            exp = self.expenses[index]
             self.exp_person_var.set(exp["person"])
             self.exp_amount_var.set(str(exp["amount"]))
             self.exp_group_var.set(exp["group"])
             self.exp_subject_var.set(exp["subject"])
 
     def add_expense(self):
+        """Add a new expense."""
         person = self.exp_person_var.get()
         try:
             amount = float(self.exp_amount_var.get() or 0)
@@ -188,17 +181,18 @@ class ExpenseApp:
             return
         group = self.exp_group_var.get()
         subject = self.exp_subject_var.get().strip()
-        if person in persons and group in groups and amount > 0 and subject:
-            expenses.append({"person": person, "amount": amount, "group": group, "subject": subject})
+        if person in self.persons and group in self.groups and amount > 0 and subject:
+            self.manager.add_or_update_expense(person, amount, group, subject)
             self.update_expense_list()
-            # Felder nach Hinzufügen leeren
+            # Clear fields after adding
             self.exp_person_var.set("")
             self.exp_amount_var.set("")
             self.exp_group_var.set("")
             self.exp_subject_var.set("")
-            self.expense_listbox.selection_clear(0, tk.END)  # Auswahl aufheben
+            self.expense_listbox.selection_clear(0, tk.END)  # Clear selection
 
     def update_expense(self):
+        """Update an existing expense."""
         selection = self.expense_listbox.curselection()
         if not selection:
             messagebox.showwarning("Warnung", "Bitte wählen Sie einen Eintrag zum Bearbeiten aus.")
@@ -212,17 +206,19 @@ class ExpenseApp:
             return
         group = self.exp_group_var.get()
         subject = self.exp_subject_var.get().strip()
-        if person in persons and group in groups and amount > 0 and subject:
-            expenses[index] = {"person": person, "amount": amount, "group": group, "subject": subject}
+        if person in self.persons and group in self.groups and amount > 0 and subject:
+            self.manager.add_or_update_expense(person, amount, group, subject, index)
             self.update_expense_list()
 
     def remove_expense(self):
+        """Remove an expense."""
         selection = self.expense_listbox.curselection()
         if selection:
-            del expenses[selection[0]]
+            self.manager.remove_expense(selection[0])
             self.update_expense_list()
 
     def setup_prepayment_tab(self):
+        """Set up the prepayments management tab."""
         ttk.Label(self.prepayment_frame, text="Anzahlungen verwalten").grid(row=0, column=0, columnspan=2, pady=5)
         
         self.prepay_listbox = tk.Listbox(self.prepayment_frame, height=10, width=50)
@@ -232,7 +228,7 @@ class ExpenseApp:
         
         ttk.Label(self.prepayment_frame, text="Person:").grid(row=1, column=1)
         self.prepay_person_var = tk.StringVar()
-        self.prepay_person_combo = ttk.Combobox(self.prepayment_frame, textvariable=self.prepay_person_var, values=persons)
+        self.prepay_person_combo = ttk.Combobox(self.prepayment_frame, textvariable=self.prepay_person_var, values=self.persons)
         self.prepay_person_combo.grid(row=2, column=1)
         
         ttk.Label(self.prepayment_frame, text="Betrag:").grid(row=3, column=1)
@@ -241,7 +237,7 @@ class ExpenseApp:
         
         ttk.Label(self.prepayment_frame, text="Empfänger:").grid(row=5, column=1)
         self.prepay_recipient_var = tk.StringVar()
-        self.prepay_recipient_combo = ttk.Combobox(self.prepayment_frame, textvariable=self.prepay_recipient_var, values=persons)
+        self.prepay_recipient_combo = ttk.Combobox(self.prepayment_frame, textvariable=self.prepay_recipient_var, values=self.persons)
         self.prepay_recipient_combo.grid(row=6, column=1)
         
         ttk.Button(self.prepayment_frame, text="Hinzufügen", command=self.add_prepayment).grid(row=7, column=1)
@@ -249,20 +245,23 @@ class ExpenseApp:
         ttk.Button(self.prepayment_frame, text="Löschen", command=self.remove_prepayment).grid(row=9, column=1)
 
     def update_prepay_list(self):
+        """Update the prepayment listbox with current prepayments."""
         self.prepay_listbox.delete(0, tk.END)
-        for prep in prepayments:
+        for prep in self.prepayments:
             self.prepay_listbox.insert(tk.END, f"{prep['person']} -> {prep['recipient']} : {prep['amount']} €")
 
     def load_prepayment(self, event):
+        """Load a prepayment from the listbox into the input fields."""
         selection = self.prepay_listbox.curselection()
         if selection:
             index = selection[0]
-            prep = prepayments[index]
+            prep = self.prepayments[index]
             self.prepay_person_var.set(prep["person"])
             self.prepay_amount_var.set(str(prep["amount"]))
             self.prepay_recipient_var.set(prep["recipient"])
 
     def add_prepayment(self):
+        """Add a new prepayment."""
         person = self.prepay_person_var.get()
         try:
             amount = float(self.prepay_amount_var.get() or 0)
@@ -270,16 +269,17 @@ class ExpenseApp:
             messagebox.showerror("Fehler", "Bitte einen gültigen Betrag eingeben.")
             return
         recipient = self.prepay_recipient_var.get()
-        if person in persons and recipient in persons and amount > 0:
-            prepayments.append({"person": person, "amount": amount, "recipient": recipient})
+        if person in self.persons and recipient in self.persons and amount > 0:
+            self.manager.add_or_update_prepayment(person, amount, recipient)
             self.update_prepay_list()
-            # Felder nach Hinzufügen leeren
+            # Clear fields after adding
             self.prepay_person_var.set("")
             self.prepay_amount_var.set("")
             self.prepay_recipient_var.set("")
-            self.prepay_listbox.selection_clear(0, tk.END)  # Auswahl aufheben
+            self.prepay_listbox.selection_clear(0, tk.END)  # Clear selection
 
     def update_prepayment(self):
+        """Update an existing prepayment."""
         selection = self.prepay_listbox.curselection()
         if not selection:
             messagebox.showwarning("Warnung", "Bitte wählen Sie einen Eintrag zum Bearbeiten aus.")
@@ -292,17 +292,19 @@ class ExpenseApp:
             messagebox.showerror("Fehler", "Bitte einen gültigen Betrag eingeben.")
             return
         recipient = self.prepay_recipient_var.get()
-        if person in persons and recipient in persons and amount > 0:
-            prepayments[index] = {"person": person, "amount": amount, "recipient": recipient}
+        if person in self.persons and recipient in self.persons and amount > 0:
+            self.manager.add_or_update_prepayment(person, amount, recipient, index)
             self.update_prepay_list()
 
     def remove_prepayment(self):
+        """Remove a prepayment."""
         selection = self.prepay_listbox.curselection()
         if selection:
-            del prepayments[selection[0]]
+            self.manager.remove_prepayment(selection[0])
             self.update_prepay_list()
 
     def setup_result_tab(self):
+        """Set up the results tab."""
         ttk.Button(self.result_frame, text="Berechnung aktualisieren", command=self.calculate_results).grid(row=0, column=0, pady=5)
         ttk.Button(self.result_frame, text="Als Text speichern", command=self.save_results).grid(row=0, column=1, pady=5, padx=5)
         ttk.Button(self.result_frame, text="Speichern", command=self.save_current_data).grid(row=0, column=2, pady=5, padx=5)
@@ -314,73 +316,13 @@ class ExpenseApp:
         scrollbar.grid(row=1, column=3, sticky="ns")
 
     def calculate_results(self):
+        """Calculate and display results."""
         self.result_text.delete(1.0, tk.END)
-        
-        self.result_text.insert(tk.END, "Ausgangspunkt der Reisekostenaufteilung:\n")
-        self.result_text.insert(tk.END, "\nAusgaben:\n")
-        for expense in expenses:
-            self.result_text.insert(tk.END, f"- {expense['person']} hat {expense['amount']:.2f} € für {expense['subject']} ausgegeben, "
-                                          f"aufgeteilt auf die Gruppe '{expense['group']}' ({len(groups[expense['group']])} Personen).\n")
-        self.result_text.insert(tk.END, "\nAnzahlungen:\n")
-        for prepayment in prepayments:
-            self.result_text.insert(tk.END, f"- {prepayment['person']} hat {prepayment['amount']:.2f} € als Anzahlung an {prepayment['recipient']} gezahlt.\n")
-        self.result_text.insert(tk.END, "\n" + "="*60 + "\n")
-        
-        paid = defaultdict(float)
-        received = defaultdict(float)
-        owes = defaultdict(float)
-
-        for expense in expenses:
-            person = expense["person"]
-            amount = expense["amount"]
-            group = groups[expense["group"]]
-            paid[person] += amount
-            per_person = amount / len(group)
-            for member in group:
-                owes[member] += per_person
-
-        for prepayment in prepayments:
-            person = prepayment["person"]
-            amount = prepayment["amount"]
-            recipient = prepayment["recipient"]
-            paid[person] += amount
-            received[recipient] += amount
-
-        balance = {person: paid[person] - received[person] - owes[person] for person in persons}
-
-        self.result_text.insert(tk.END, "\nTransaktionen die jetzt folgen müssen:\n")
-        self.result_text.insert(tk.END, f"{'Schuldner':<15} {'Gläubiger':<15} {'Betrag':<10}\n")
-        self.result_text.insert(tk.END, "-"*40 + "\n")
-        creditors = [(p, b) for p, b in balance.items() if b > 0]
-        debtors = [(p, -b) for p, b in balance.items() if b < 0]
-
-        i, j = 0, 0
-        while i < len(creditors) and j < len(debtors):
-            creditor, credit = creditors[i]
-            debtor, debt = debtors[j]
-            amount = min(credit, debt)
-            if amount > 0:
-                self.result_text.insert(tk.END, f"{debtor:<15} {creditor:<15} {amount:>8.2f} €\n")
-            creditors[i] = (creditor, credit - amount)
-            debtors[j] = (debtor, debt - amount)
-            if creditors[i][1] <= 0:
-                i += 1
-            if debtors[j][1] <= 0:
-                j += 1
-
-        self.result_text.insert(tk.END, "\nÜberprüfung der Kosten aus Sicht jeder Person:\n")
-        self.result_text.insert(tk.END, f"{'Person':<15} {'Geschuldet':>12} {'Bezahlt':>12} {'Erhielt':>12} {'Bilanz':>12}\n")
-        self.result_text.insert(tk.END, "-"*65 + "\n")
-        for person in sorted(persons):
-            total_owes = owes[person]
-            total_paid = paid[person]
-            total_received = received[person]
-            expected = balance[person]
-            label = "Erwartet" if expected >= 0 else "Schuldet"
-            value = expected if expected >= 0 else -expected
-            self.result_text.insert(tk.END, f"{person:<15} {total_owes:>12.2f} {total_paid:>12.2f} {total_received:>12.2f} {value:>12.2f} ({label})\n")
+        summary = self.manager.get_summary()
+        self.result_text.insert(tk.END, summary)
 
     def save_results(self):
+        """Save results to a text file."""
         file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
         if file_path:
             with open(file_path, "w", encoding="utf-8") as file:
@@ -388,17 +330,24 @@ class ExpenseApp:
             messagebox.showinfo("Erfolg", f"Ergebnisse wurden in {file_path} gespeichert.")
 
     def save_current_data(self):
-        data = {
-            "persons": persons,
-            "groups": groups,
-            "expenses": expenses,
-            "prepayments": prepayments
-        }
-        with open(SAVE_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
+        """Save current data to the default save file."""
+        self.manager.save_to_file(SAVE_FILE)
         messagebox.showinfo("Erfolg", "Aktuelle Daten wurden gespeichert und werden beim nächsten Start geladen.")
 
-if __name__ == "__main__":
+
+def main():
+    """Run the GUI application."""
+    # Initialize the expense manager
+    if os.path.exists(SAVE_FILE):
+        manager = ExpenseManager.load_from_file(SAVE_FILE)
+    else:
+        manager = ExpenseManager.create_with_defaults()
+    
+    # Start the GUI application
     root = tk.Tk()
-    app = ExpenseApp(root)
+    app = ExpenseApp(root, manager)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main() 
