@@ -1,0 +1,105 @@
+{
+    "persons": [
+        "Tobias",
+        "Teal",
+        "Adrian",
+        "Patrick",
+        "Marius",
+        "Micha",
+        "Jan",
+        "Marlon",
+        "Yi Pin"
+    ],
+    "groups": {
+        "Alle": [
+            "Tobias",
+            "Teal",
+            "Adrian",
+            "Patrick",
+            "Marius",
+            "Micha",
+            "Jan",
+            "Marlon",
+            "Yi Pin"
+        ],
+        "Fahrgemeinschaft": [
+            "Tobias",
+            "Teal",
+            "Adrian",
+            "Patrick",
+            "Marius",
+            "Yi Pin"
+        ]
+    },
+    "expenses": [
+        {
+            "person": "Tobias",
+            "amount": 1736.0,
+            "group": "Alle",
+            "subject": "FeWo Miete"
+        },
+        {
+            "person": "Teal",
+            "amount": 1000,
+            "group": "Fahrgemeinschaft",
+            "subject": "Mietwagen"
+        },
+        {
+            "person": "Patrick",
+            "amount": 450,
+            "group": "Alle",
+            "subject": "Bierdronka"
+        },
+        {
+            "person": "Marius",
+            "amount": 40,
+            "group": "Alle",
+            "subject": "Saunaholz"
+        },
+        {
+            "person": "Tobias",
+            "amount": 120.0,
+            "group": "Alle",
+            "subject": "FeWo Endreinigung"
+        },
+        {
+            "person": "Micha",
+            "amount": 800.0,
+            "group": "Alle",
+            "subject": "Kaufland"
+        },
+        {
+            "person": "Yi Pin",
+            "amount": 20.0,
+            "group": "Fahrgemeinschaft",
+            "subject": "KFC"
+        }
+    ],
+    "prepayments": [
+        {
+            "person": "Adrian",
+            "amount": 100,
+            "recipient": "Tobias"
+        },
+        {
+            "person": "Patrick",
+            "amount": 100,
+            "recipient": "Tobias"
+        },
+        {
+            "person": "Marius",
+            "amount": 100,
+            "recipient": "Tobias"
+        },
+        {
+            "person": "Micha",
+            "amount": 100,
+            "recipient": "Tobias"
+        },
+        {
+            "person": "Jan",
+            "amount": 100,
+            "recipient": "Tobias"
+        }
+    ]
+}
