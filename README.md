@@ -2,6 +2,8 @@
 
 A tool for groups of friends to split expenses during trips or events. Track who paid for what, manage groups, and calculate optimal repayment plans to minimize the number of transactions.
 
+[![Test and Lint](https://github.com/MarlonSchultz/LagerfeuerClearing/actions/workflows/test-and-lint.yml/badge.svg)](https://github.com/MarlonSchultz/LagerfeuerClearing/actions/workflows/test-and-lint.yml)
+
 ## Installation
 
 ### From Source
