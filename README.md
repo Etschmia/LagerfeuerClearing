@@ -187,7 +187,7 @@ ruff check --fix .
 
 This project uses GitHub Actions to run tests and linting checks automatically on each push:
 
-- **What it does**: Runs tests and linting checks (ruff) on Python 3.10
+- **What it does**: Runs tests and linting checks (ruff) on Python 3.11
 - **When it runs**: On each push to main branch and on pull requests to main
 - **How to check**: Visit the Actions tab on the GitHub repository page
 - **Configuration**: See `.github/workflows/test-and-lint.yml`
@@ -226,5 +226,5 @@ The GitHub Actions workflow will automatically run tests and linting on your pul
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.11+
 - tkinter (for GUI version, included in standard Python distribution) 

@@ -10,9 +10,10 @@ readme = "README.md"
 authors = [
     {name = "Marlon", email = "example@example.com"}
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
@@ -43,8 +44,8 @@ exclude = [
     "build",
     "dist",
 ]
-# Assume Python 3.6
-target-version = "py36"
+# Target Python 3.11
+target-version = "py311"
 line-length = 100
 
 [tool.ruff.lint]
