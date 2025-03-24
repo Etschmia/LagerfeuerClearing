@@ -2,6 +2,7 @@
 """
 Command line application for expense sharing calculations.
 """
+
 from lagerfeuer_clearing.core import ExpenseManager
 
 
@@ -15,4 +16,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

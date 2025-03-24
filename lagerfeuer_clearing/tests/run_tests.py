@@ -4,7 +4,6 @@ Script to run all tests for the Lagerfeuer Clearing application.
 """
 
 import unittest
-from lagerfeuer_clearing.tests.test_expense_manager import TestExpenseManager
 
 
 def main():
@@ -14,4 +13,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()
