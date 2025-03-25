@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lagerfeuer-clearing"
+dynamic = ["version"]
+description = "A tool for expense sharing calculations"
+readme = "README.md"
+authors = [
+    {name = "Marlon", email = "example@example.com"}
+]
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "ruff>=0.0.17",
+]
+
+[project.urls]
+Homepage = "https://github.com/example/lagerfeuer-clearing"
+
+[project.scripts]
+lagerfeuer-cli = "lagerfeuer_clearing.cli:main"
+lagerfeuer-gui = "lagerfeuer_clearing.gui:main"
+lagerfeuer = "lagerfeuer_clearing.__main__:main"
+
+[tool.setuptools]
+packages = ["lagerfeuer_clearing"]
+
+[tool.setuptools.dynamic]
+version = {attr = "lagerfeuer_clearing.__version__"}
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+]
+# Target Python 3.11
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+# Enable flake8-bugbear (`B`) rules, plus all default lints
+select = ["E", "F", "B"]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+
+# Ignore specific rules
+ignore = [
+    # These can be adjusted according to your preferences
+    "E501",  # Line too long
+]
+
+[tool.ruff.format]
+# Use double quotes for multiline strings
+quote-style = "double"
+indent-style = "space" 
