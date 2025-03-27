@@ -75,29 +75,38 @@ class ExpenseApp:
         self.group_combo = ttk.Combobox(
             self.group_frame, textvariable=self.group_var, values=list(self.groups.keys())
         )
-        self.group_combo.grid(row=1, column=0, padx=5)
+        self.group_combo.grid(row=1, column=0, padx=5, pady=2)
         self.group_combo.bind("<<ComboboxSelected>>", self.update_group_list)
 
         self.group_listbox = tk.Listbox(self.group_frame, height=10)
-        self.group_listbox.grid(row=2, column=0, rowspan=4, padx=5, pady=5)
+        self.group_listbox.grid(row=2, column=0, padx=5, pady=5, sticky="nsew")
 
-        ttk.Label(self.group_frame, text="Person hinzufügen:").grid(row=1, column=1)
+        # Eingabefelder in einem separaten Frame
+        input_frame = ttk.Frame(self.group_frame)
+        input_frame.grid(row=2, column=1, sticky="nw", padx=5)
+
+        ttk.Label(input_frame, text="Person hinzufügen:").grid(row=0, column=0, sticky="w")
         self.person_var = tk.StringVar()
-        ttk.Entry(self.group_frame, textvariable=self.person_var).grid(row=2, column=1, pady=5)
-        ttk.Button(self.group_frame, text="Hinzufügen", command=self.add_person).grid(
-            row=3, column=1
-        )
+        ttk.Entry(input_frame, textvariable=self.person_var).grid(row=1, column=0, pady=2)
 
-        ttk.Button(self.group_frame, text="Löschen", command=self.remove_person).grid(
-            row=4, column=1
-        )
-
-        ttk.Label(self.group_frame, text="Gruppe umbenennen:").grid(row=5, column=1)
+        ttk.Label(input_frame, text="Gruppe umbenennen:").grid(row=2, column=0, sticky="w")
         self.new_group_var = tk.StringVar()
-        ttk.Entry(self.group_frame, textvariable=self.new_group_var).grid(row=6, column=1, pady=5)
-        ttk.Button(self.group_frame, text="Umbenennen", command=self.rename_group).grid(
-            row=7, column=1
+        ttk.Entry(input_frame, textvariable=self.new_group_var).grid(row=3, column=0, pady=2)
+
+        # Buttons nebeneinander unten
+        ttk.Button(self.group_frame, text="Hinzufügen", command=self.add_person).grid(
+            row=3, column=0, padx=5, pady=5
         )
+        ttk.Button(self.group_frame, text="Löschen", command=self.remove_person).grid(
+            row=3, column=1, padx=5, pady=5
+        )
+        ttk.Button(self.group_frame, text="Umbenennen", command=self.rename_group).grid(
+            row=3, column=2, padx=5, pady=5
+        )
+
+        # Grid-Konfiguration
+        self.group_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.group_frame.grid_rowconfigure(2, weight=1)  # Listbox nimmt Platz ein
 
     def update_group_list(self, event=None):
         """Update the listbox with current group members."""
@@ -142,44 +151,56 @@ class ExpenseApp:
             row=0, column=0, columnspan=2, pady=5
         )
 
+        # Listbox
         self.expense_listbox = tk.Listbox(self.expense_frame, height=10, width=50)
-        self.expense_listbox.grid(row=1, column=0, rowspan=4, padx=5, pady=5)
+        self.expense_listbox.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
         self.expense_listbox.bind("<<ListboxSelect>>", self.load_expense)
         self.update_expense_list()
 
-        ttk.Label(self.expense_frame, text="Person:").grid(row=1, column=1)
+        # Eingabefelder in einem separaten Frame
+        input_frame = ttk.Frame(self.expense_frame)
+        input_frame.grid(row=1, column=1, sticky="nw", padx=5)
+
+        # Person
+        ttk.Label(input_frame, text="Person:").grid(row=0, column=0, sticky="w")
         self.exp_person_var = tk.StringVar()
         self.exp_person_combo = ttk.Combobox(
-            self.expense_frame, textvariable=self.exp_person_var, values=self.persons
+            input_frame, textvariable=self.exp_person_var, values=self.persons
         )
-        self.exp_person_combo.grid(row=2, column=1)        
-        # self.exp_person_combo.bind("<<ComboboxSelected>>", lambda e: print("Combobox selected:", e.widget))
+        self.exp_person_combo.grid(row=1, column=0, pady=2)
 
-
-        ttk.Label(self.expense_frame, text="Betrag:").grid(row=3, column=1)
+        # Betrag
+        ttk.Label(input_frame, text="Betrag:").grid(row=2, column=0, sticky="w")
         self.exp_amount_var = tk.StringVar()
-        ttk.Entry(self.expense_frame, textvariable=self.exp_amount_var).grid(row=4, column=1)
+        ttk.Entry(input_frame, textvariable=self.exp_amount_var).grid(row=3, column=0, pady=2)
 
-        ttk.Label(self.expense_frame, text="Gruppe:").grid(row=5, column=1)
+        # Gruppe
+        ttk.Label(input_frame, text="Gruppe:").grid(row=4, column=0, sticky="w")
         self.exp_group_var = tk.StringVar()
         self.exp_group_combo = ttk.Combobox(
-            self.expense_frame, textvariable=self.exp_group_var, values=list(self.groups.keys())
+            input_frame, textvariable=self.exp_group_var, values=list(self.groups.keys())
         )
-        self.exp_group_combo.grid(row=6, column=1)
+        self.exp_group_combo.grid(row=5, column=0, pady=2)
 
-        ttk.Label(self.expense_frame, text="Betreff:").grid(row=7, column=1)
+        # Betreff
+        ttk.Label(input_frame, text="Betreff:").grid(row=6, column=0, sticky="w")
         self.exp_subject_var = tk.StringVar()
-        ttk.Entry(self.expense_frame, textvariable=self.exp_subject_var).grid(row=8, column=1)
+        ttk.Entry(input_frame, textvariable=self.exp_subject_var).grid(row=7, column=0, pady=2)
 
+        # Buttons
         ttk.Button(self.expense_frame, text="Hinzufügen", command=self.add_expense).grid(
-            row=9, column=1
+            row=2, column=0, padx=5, pady=5
         )
         ttk.Button(self.expense_frame, text="Übernehmen", command=self.update_expense).grid(
-            row=10, column=1
+            row=2, column=1, padx=5, pady=5
         )
         ttk.Button(self.expense_frame, text="Löschen", command=self.remove_expense).grid(
-            row=11, column=1
+            row=2, column=2, padx=5, pady=5
         )
+
+        # Grid-Konfiguration
+        self.expense_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.expense_frame.grid_rowconfigure(1, weight=1)
 
     def update_expense_list(self):
         """Update the expense listbox with current expenses."""
@@ -190,6 +211,7 @@ class ExpenseApp:
             )
 
     def load_expense(self, event):
+        """Load an expense from the listbox into the input fields."""
         selection = self.expense_listbox.curselection()
         # print(f"load_expense: selection = {selection}, widget = {event.widget}")
         if selection:  # Nur bei echter Auswahl reagieren
@@ -256,39 +278,53 @@ class ExpenseApp:
             row=0, column=0, columnspan=2, pady=5
         )
 
+        # Listbox
         self.prepay_listbox = tk.Listbox(self.prepayment_frame, height=10, width=50)
-        self.prepay_listbox.grid(row=1, column=0, rowspan=4, padx=5, pady=5)
+        self.prepay_listbox.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
         self.prepay_listbox.bind("<<ListboxSelect>>", self.load_prepayment)
         self.update_prepay_list()
 
-        ttk.Label(self.prepayment_frame, text="Person:").grid(row=1, column=1)
+        # Eingabefelder in einem separaten Frame
+        input_frame = ttk.Frame(self.prepayment_frame)
+        input_frame.grid(row=1, column=1, sticky="nw", padx=5)
+
+        # Person
+        ttk.Label(input_frame, text="Person:").grid(row=0, column=0, sticky="w")
         self.prepay_person_var = tk.StringVar()
         self.prepay_person_combo = ttk.Combobox(
-            self.prepayment_frame, textvariable=self.prepay_person_var, values=self.persons
+            input_frame, textvariable=self.prepay_person_var, values=self.persons
         )
-        self.prepay_person_combo.grid(row=2, column=1)
-        # self.prepay_person_combo.bind("<<ComboboxSelected>>", lambda e: print("Person Combobox event:", e.widget))
-        ttk.Label(self.prepayment_frame, text="Betrag:").grid(row=3, column=1)
-        self.prepay_amount_var = tk.StringVar()
-        ttk.Entry(self.prepayment_frame, textvariable=self.prepay_amount_var).grid(row=4, column=1)
+        self.prepay_person_combo.grid(row=1, column=0, pady=2)
+        self.prepay_person_combo.bind("<<ComboboxSelected>>", lambda e: print("Person Combobox event:", e.widget))
 
-        ttk.Label(self.prepayment_frame, text="Empfänger:").grid(row=5, column=1)
+        # Betrag
+        ttk.Label(input_frame, text="Betrag:").grid(row=2, column=0, sticky="w")
+        self.prepay_amount_var = tk.StringVar()
+        ttk.Entry(input_frame, textvariable=self.prepay_amount_var).grid(row=3, column=0, pady=2)
+
+        # Empfänger
+        ttk.Label(input_frame, text="Empfänger:").grid(row=4, column=0, sticky="w")
         self.prepay_recipient_var = tk.StringVar()
         self.prepay_recipient_combo = ttk.Combobox(
-            self.prepayment_frame, textvariable=self.prepay_recipient_var, values=self.persons
+            input_frame, textvariable=self.prepay_recipient_var, values=self.persons
         )
-        self.prepay_recipient_combo.grid(row=6, column=1)
-        # self.prepay_recipient_combo.bind("<<ComboboxSelected>>", lambda e: print("Recipient Combobox event:", e.widget))
+        self.prepay_recipient_combo.grid(row=5, column=0, pady=2)
+        self.prepay_recipient_combo.bind("<<ComboboxSelected>>", lambda e: print("Recipient Combobox event:", e.widget))
 
+        # Buttons
         ttk.Button(self.prepayment_frame, text="Hinzufügen", command=self.add_prepayment).grid(
-            row=7, column=1
+            row=2, column=0, padx=5, pady=5
         )
         ttk.Button(self.prepayment_frame, text="Übernehmen", command=self.update_prepayment).grid(
-            row=8, column=1
+            row=2, column=1, padx=5, pady=5
         )
         ttk.Button(self.prepayment_frame, text="Löschen", command=self.remove_prepayment).grid(
-            row=9, column=1
+            row=2, column=2, padx=5, pady=5
         )
+
+        # Grid-Konfiguration
+        self.prepayment_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.prepayment_frame.grid_rowconfigure(1, weight=1)
 
     def update_prepay_list(self):
         """Update the prepayment listbox with current prepayments."""
@@ -299,6 +335,7 @@ class ExpenseApp:
             )
 
     def load_prepayment(self, event):
+        """Load a prepayment from the listbox into the input fields."""
         selection = self.prepay_listbox.curselection()
         # print(f"load_prepayment: selection = {selection}, widget = {event.widget}")  # Debugging optional
         if selection:  # Nur bei echter Auswahl reagieren
@@ -358,23 +395,30 @@ class ExpenseApp:
 
     def setup_result_tab(self):
         """Set up the results tab."""
-        ttk.Button(
-            self.result_frame, text="Berechnung aktualisieren", command=self.calculate_results
-        ).grid(row=0, column=0, pady=5)
-        ttk.Button(self.result_frame, text="Als Text speichern", command=self.save_results).grid(
-            row=0, column=1, pady=5, padx=5
-        )
-        ttk.Button(self.result_frame, text="Speichern", command=self.save_current_data).grid(
-            row=0, column=2, pady=5, padx=5
-        )
-
+        # Textfeld mit Scrollbar
         scrollbar = ttk.Scrollbar(self.result_frame, orient="vertical")
         self.result_text = tk.Text(
             self.result_frame, height=20, width=80, yscrollcommand=scrollbar.set
         )
         scrollbar.config(command=self.result_text.yview)
-        self.result_text.grid(row=1, column=0, columnspan=3, padx=5, pady=5)
-        scrollbar.grid(row=1, column=3, sticky="ns")
+        self.result_text.grid(row=0, column=0, columnspan=3, padx=5, pady=5, sticky="nsew")
+        # columnspan=3 beim Textfeld: Es erstreckt sich über alle drei Spalten der Buttons
+        scrollbar.grid(row=0, column=3, sticky="ns")
+
+        # Buttons nebeneinander unter dem Textfeld
+        ttk.Button(
+            self.result_frame, text="Berechnung aktualisieren", command=self.calculate_results
+        ).grid(row=1, column=0, pady=5, padx=5)
+        ttk.Button(self.result_frame, text="Als Text speichern", command=self.save_results).grid(
+            row=1, column=1, pady=5, padx=5
+        )
+        ttk.Button(self.result_frame, text="Speichern", command=self.save_current_data).grid(
+            row=1, column=2, pady=5, padx=5
+        )
+
+        # Grid-Konfiguration für responsives Layout
+        self.result_frame.grid_columnconfigure((0, 1, 2), weight=1)  # Gleiche Breite für Buttons
+        self.result_frame.grid_rowconfigure(0, weight=1)  # Textfeld nimmt verfügbaren Platz ein
 
     def calculate_results(self):
         """Calculate and display results."""
