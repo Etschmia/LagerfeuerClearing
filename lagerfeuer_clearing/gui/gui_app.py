@@ -54,6 +54,8 @@ class ExpenseApp:
         self.setup_expense_tab()
         self.setup_prepayment_tab()
         self.setup_result_tab()
+        self.selected_expense_index = None
+        self.selected_prepayment_index = None 
 
     def update_all_comboboxes(self):
         """Update all comboboxes with current data."""
@@ -150,7 +152,9 @@ class ExpenseApp:
         self.exp_person_combo = ttk.Combobox(
             self.expense_frame, textvariable=self.exp_person_var, values=self.persons
         )
-        self.exp_person_combo.grid(row=2, column=1)
+        self.exp_person_combo.grid(row=2, column=1)        
+        # self.exp_person_combo.bind("<<ComboboxSelected>>", lambda e: print("Combobox selected:", e.widget))
+
 
         ttk.Label(self.expense_frame, text="Betrag:").grid(row=3, column=1)
         self.exp_amount_var = tk.StringVar()
@@ -186,15 +190,18 @@ class ExpenseApp:
             )
 
     def load_expense(self, event):
-        """Load an expense from the listbox into the input fields."""
         selection = self.expense_listbox.curselection()
-        if selection:
-            index = selection[0]
-            exp = self.expenses[index]
+        # print(f"load_expense: selection = {selection}, widget = {event.widget}")
+        if selection:  # Nur bei echter Auswahl reagieren
+            self.selected_expense_index = selection[0]
+            exp = self.expenses[self.selected_expense_index]
             self.exp_person_var.set(exp["person"])
             self.exp_amount_var.set(str(exp["amount"]))
             self.exp_group_var.set(exp["group"])
             self.exp_subject_var.set(exp["subject"])
+            # print(f"Index gesetzt: self.selected_expense_index = {self.selected_expense_index}")
+        # print(f"load_expense nach Laden: selection = {self.expense_listbox.curselection()}, index = {self.selected_expense_index}")
+
 
     def add_expense(self):
         """Add a new expense."""
@@ -217,12 +224,10 @@ class ExpenseApp:
             self.expense_listbox.selection_clear(0, tk.END)  # Clear selection
 
     def update_expense(self):
-        """Update an existing expense."""
-        selection = self.expense_listbox.curselection()
-        if not selection:
+        # print(f"update_expense: self.selected_expense_index = {self.selected_expense_index}")
+        if self.selected_expense_index is None:
             messagebox.showwarning("Warnung", "Bitte wählen Sie einen Eintrag zum Bearbeiten aus.")
             return
-        index = selection[0]
         person = self.exp_person_var.get()
         try:
             amount = float(self.exp_amount_var.get() or 0)
@@ -232,8 +237,11 @@ class ExpenseApp:
         group = self.exp_group_var.get()
         subject = self.exp_subject_var.get().strip()
         if person in self.persons and group in self.groups and amount > 0 and subject:
-            self.manager.add_or_update_expense(person, amount, group, subject, index)
+            self.manager.add_or_update_expense(person, amount, group, subject, self.selected_expense_index)
             self.update_expense_list()
+            self.expense_listbox.selection_clear(0, tk.END)
+            self.expense_listbox.selection_set(self.selected_expense_index)
+            self.expense_listbox.activate(self.selected_expense_index)
 
     def remove_expense(self):
         """Remove an expense."""
@@ -259,7 +267,7 @@ class ExpenseApp:
             self.prepayment_frame, textvariable=self.prepay_person_var, values=self.persons
         )
         self.prepay_person_combo.grid(row=2, column=1)
-
+        # self.prepay_person_combo.bind("<<ComboboxSelected>>", lambda e: print("Person Combobox event:", e.widget))
         ttk.Label(self.prepayment_frame, text="Betrag:").grid(row=3, column=1)
         self.prepay_amount_var = tk.StringVar()
         ttk.Entry(self.prepayment_frame, textvariable=self.prepay_amount_var).grid(row=4, column=1)
@@ -270,6 +278,7 @@ class ExpenseApp:
             self.prepayment_frame, textvariable=self.prepay_recipient_var, values=self.persons
         )
         self.prepay_recipient_combo.grid(row=6, column=1)
+        # self.prepay_recipient_combo.bind("<<ComboboxSelected>>", lambda e: print("Recipient Combobox event:", e.widget))
 
         ttk.Button(self.prepayment_frame, text="Hinzufügen", command=self.add_prepayment).grid(
             row=7, column=1
@@ -290,14 +299,16 @@ class ExpenseApp:
             )
 
     def load_prepayment(self, event):
-        """Load a prepayment from the listbox into the input fields."""
         selection = self.prepay_listbox.curselection()
-        if selection:
-            index = selection[0]
-            prep = self.prepayments[index]
+        # print(f"load_prepayment: selection = {selection}, widget = {event.widget}")  # Debugging optional
+        if selection:  # Nur bei echter Auswahl reagieren
+            self.selected_prepayment_index = selection[0]
+            prep = self.prepayments[self.selected_prepayment_index]
             self.prepay_person_var.set(prep["person"])
             self.prepay_amount_var.set(str(prep["amount"]))
             self.prepay_recipient_var.set(prep["recipient"])
+            # print(f"Index gesetzt: self.selected_prepayment_index = {self.selected_prepayment_index}")  # Debugging optional
+        # print(f"load_prepayment nach Laden: selection = {self.prepay_listbox.curselection()}, index = {self.selected_prepayment_index}")  # Debugging optional
 
     def add_prepayment(self):
         """Add a new prepayment."""
@@ -319,11 +330,10 @@ class ExpenseApp:
 
     def update_prepayment(self):
         """Update an existing prepayment."""
-        selection = self.prepay_listbox.curselection()
-        if not selection:
+        print(f"update_prepayment: self.selected_prepayment_index = {self.selected_prepayment_index}")  # Debugging optional
+        if self.selected_prepayment_index is None:
             messagebox.showwarning("Warnung", "Bitte wählen Sie einen Eintrag zum Bearbeiten aus.")
             return
-        index = selection[0]
         person = self.prepay_person_var.get()
         try:
             amount = float(self.prepay_amount_var.get() or 0)
@@ -332,8 +342,12 @@ class ExpenseApp:
             return
         recipient = self.prepay_recipient_var.get()
         if person in self.persons and recipient in self.persons and amount > 0:
-            self.manager.add_or_update_prepayment(person, amount, recipient, index)
+            self.manager.add_or_update_prepayment(person, amount, recipient, self.selected_prepayment_index)
             self.update_prepay_list()
+            # Auswahl nach Update wiederherstellen
+            self.prepay_listbox.selection_clear(0, tk.END)
+            self.prepay_listbox.selection_set(self.selected_prepayment_index)
+            self.prepay_listbox.activate(self.selected_prepayment_index)
 
     def remove_prepayment(self):
         """Remove a prepayment."""

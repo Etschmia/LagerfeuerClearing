@@ -67,12 +67,6 @@
             "amount": 800.0,
             "group": "Alle",
             "subject": "Kaufland"
-        },
-        {
-            "person": "Yi Pin",
-            "amount": 20.0,
-            "group": "Fahrgemeinschaft",
-            "subject": "KFC"
         }
     ],
     "prepayments": [
