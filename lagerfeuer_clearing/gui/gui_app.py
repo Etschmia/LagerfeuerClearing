@@ -35,7 +35,7 @@ class ExpenseApp:
 
         # Create notebook for tabs
         self.notebook = ttk.Notebook(root)
-        self.notebook.pack(pady=10, expand=True)
+        self.notebook.pack(pady=10, expand=True, fill="both")
 
         # Create tab frames
         self.group_frame = ttk.Frame(self.notebook)
@@ -454,6 +454,12 @@ def main():
 
     # Start the GUI application
     root = tk.Tk()
+    # Set the window size to 10% larger
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    new_width = int(screen_width * 0.6 * 1.1)  # 10% larger than 60% of screen width
+    new_height = int(screen_height * 0.6 * 1.1)  # 10% larger than 60% of screen height
+    root.geometry(f"{new_width}x{new_height}")
     # Create app instance but no need to store it since it modifies root directly
     ExpenseApp(root, manager)  # App instance is bound to root
     root.mainloop()

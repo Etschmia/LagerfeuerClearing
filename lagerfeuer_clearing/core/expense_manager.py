@@ -295,9 +295,9 @@ class ExpenseManager:
         balances = results["balances"]
         transactions = results["transactions"]
 
-        summary.append("\nTransaktionen die jetzt folgen müssen:")
+        summary.append("\n\tTransaktionen die jetzt folgen müssen:\n")
         for trans in transactions:
-            summary.append(f"{trans['from']} zahlt {trans['to']} {trans['amount']:.2f} €")
+            summary.append(f"\t{trans['from']:<11} zahlt  {trans['to']:<11} {trans['amount']:.2f} €")
 
         # Verification summary
         paid = balances["paid"]
@@ -305,7 +305,9 @@ class ExpenseManager:
         owes = balances["owes"]
         balance = balances["balance"]
 
-        summary.append("\nÜberprüfung der Kosten aus Sicht jeder Person:")
+        summary.append("\n" + "=" * 60)
+
+        summary.append("\nÜberprüfung der Kosten aus Sicht jeder Person:\n")
         for person in sorted(self.persons):
             total_owes = owes.get(person, 0)
             total_paid = paid.get(person, 0)
@@ -314,8 +316,8 @@ class ExpenseManager:
             label = "Erwartet" if expected >= 0 else "Schuldet"
             value = expected if expected >= 0 else -expected
             summary.append(
-                f"{person}: Geschuldet {total_owes:.2f} €, Bezahlt {total_paid:.2f} €, "
-                f"Erhielt {total_received:.2f} €, {label} {value:.2f} €"
+                f"{person:<11}: Geschuldet {total_owes:<7.2f} €, Bezahlt {total_paid:<7.2f} €, "
+                f"Erhielt {total_received:<7.2f} €, {label} {value:.2f} €"
             )
 
         return "\n".join(summary)
