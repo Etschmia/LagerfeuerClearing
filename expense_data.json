@@ -7,8 +7,7 @@
         "Marius",
         "Micha",
         "Jan",
-        "Marlon",
-        "Yi Pin"
+        "Marlon"
     ],
     "groups": {
         "Alle": [
@@ -19,30 +18,34 @@
             "Marius",
             "Micha",
             "Jan",
-            "Marlon",
-            "Yi Pin"
+            "Marlon"
         ],
         "Fahrgemeinschaft": [
             "Tobias",
             "Teal",
             "Adrian",
             "Patrick",
-            "Marius",
-            "Yi Pin"
+            "Marius"
         ]
     },
     "expenses": [
         {
             "person": "Tobias",
-            "amount": 1736.0,
+            "amount": 1476.0,
             "group": "Alle",
-            "subject": "FeWo Miete"
+            "subject": "Unterkunft Restzahlung"
         },
         {
             "person": "Teal",
             "amount": 1000,
             "group": "Fahrgemeinschaft",
             "subject": "Mietwagen"
+        },
+        {
+            "person": "Marlon",
+            "amount": 700,
+            "group": "Alle",
+            "subject": "Kaufland"
         },
         {
             "person": "Patrick",
@@ -58,15 +61,9 @@
         },
         {
             "person": "Tobias",
-            "amount": 120.0,
+            "amount": 630.0,
             "group": "Alle",
-            "subject": "FeWo Endreinigung"
-        },
-        {
-            "person": "Micha",
-            "amount": 800.0,
-            "group": "Alle",
-            "subject": "Kaufland"
+            "subject": "Unterkunft Erstzahlung"
         }
     ],
     "prepayments": [
